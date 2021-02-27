@@ -1,7 +1,10 @@
 ﻿//
 //  WorldLODMapAreaOffsets.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -57,17 +60,13 @@ namespace Warcraft.WDL.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            for (var y = 0; y < 64; ++y)
             {
-                using (var br = new BinaryReader(ms))
+                for (var x = 0; x < 64; ++x)
                 {
-                    for (var y = 0; y < 64; ++y)
-                    {
-                        for (var x = 0; x < 64; ++x)
-                        {
-                            MapAreaOffsets.Add(br.ReadUInt32());
-                        }
-                    }
+                    MapAreaOffsets.Add(br.ReadUInt32());
                 }
             }
         }
@@ -90,18 +89,16 @@ namespace Warcraft.WDL.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
+                foreach (var mapAreaOffset in MapAreaOffsets)
                 {
-                    foreach (var mapAreaOffset in MapAreaOffsets)
-                    {
-                        bw.Write(mapAreaOffset);
-                    }
+                    bw.Write(mapAreaOffset);
                 }
-
-                return ms.ToArray();
             }
+
+            return ms.ToArray();
         }
     }
 }

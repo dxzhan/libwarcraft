@@ -1,7 +1,10 @@
 ﻿//
 //  TerrainLiquidChunk.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -50,7 +53,7 @@ namespace Warcraft.ADT.Chunks
         /// <summary>
         /// Gets or sets the liquid attributes.
         /// </summary>
-        public TerrainLiquidAttributes LiquidAttributes { get; set; }
+        public TerrainLiquidAttributes? LiquidAttributes { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TerrainLiquidChunk"/> class.
@@ -58,15 +61,11 @@ namespace Warcraft.ADT.Chunks
         /// <param name="data">The binary data.</param>
         public TerrainLiquidChunk(byte[] data)
         {
-            using (var ms = new MemoryStream(data))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    WaterInstanceOffset = br.ReadUInt32();
-                    LayerCount = br.ReadUInt32();
-                    AttributesOffset = br.ReadUInt32();
-                }
-            }
+            using var ms = new MemoryStream(data);
+            using var br = new BinaryReader(ms);
+            WaterInstanceOffset = br.ReadUInt32();
+            LayerCount = br.ReadUInt32();
+            AttributesOffset = br.ReadUInt32();
         }
 
         /// <summary>

@@ -1,7 +1,10 @@
 //
 //  ModelStaticLighting.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -57,16 +60,12 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            var lightCount = inData.Length / StaticLight.GetSize();
+            for (uint i = 0; i < lightCount; ++i)
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    var lightCount = inData.Length / StaticLight.GetSize();
-                    for (uint i = 0; i < lightCount; ++i)
-                    {
-                        StaticLights.Add(new StaticLight(br.ReadBytes(StaticLight.GetSize())));
-                    }
-                }
+                StaticLights.Add(new StaticLight(br.ReadBytes(StaticLight.GetSize())));
             }
         }
 
@@ -79,18 +78,16 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
+                foreach (var staticLight in StaticLights)
                 {
-                    foreach (var staticLight in StaticLights)
-                    {
-                        bw.Write(staticLight.Serialize());
-                    }
+                    bw.Write(staticLight.Serialize());
                 }
-
-                return ms.ToArray();
             }
+
+            return ms.ToArray();
         }
     }
 }

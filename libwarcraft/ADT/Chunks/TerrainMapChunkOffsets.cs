@@ -1,7 +1,10 @@
 ﻿//
 //  TerrainMapChunkOffsets.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -57,26 +60,23 @@ namespace Warcraft.ADT.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+
+            // read size, n of entries is size / 16
+            var entryCount = br.BaseStream.Length / 16;
+
+            for (var i = 0; i < entryCount; ++i)
             {
-                using (var br = new BinaryReader(ms))
+                var entry = new MapChunkOffsetEntry
                 {
-                    // read size, n of entries is size / 16
-                    var nEntries = br.BaseStream.Length / 16;
+                    MapChunkOffset = br.ReadInt32(),
+                    MapChunkSize = br.ReadInt32(),
+                    Flags = br.ReadInt32(),
+                    AsynchronousLoadingID = br.ReadInt32()
+                };
 
-                    for (var i = 0; i < nEntries; ++i)
-                    {
-                        var entry = new MapChunkOffsetEntry
-                        {
-                            MapChunkOffset = br.ReadInt32(),
-                            MapChunkSize = br.ReadInt32(),
-                            Flags = br.ReadInt32(),
-                            AsynchronousLoadingID = br.ReadInt32()
-                        };
-
-                        Entries.Add(entry);
-                    }
-                }
+                Entries.Add(entry);
             }
         }
 

@@ -1,7 +1,10 @@
 //
 //  MDXVertexProperty.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -18,12 +21,14 @@
 //
 
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace Warcraft.MDX.Geometry
 {
     /// <summary>
     /// A quartet of bone indices into the <see cref="MDX.KeyBoneLookupTable"/>, which are associated with a vertex.
     /// </summary>
+    [PublicAPI]
     public class MDXVertexProperty
     {
         /// <summary>

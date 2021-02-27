@@ -1,7 +1,10 @@
 //
 //  MDXVertex.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,6 +23,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using JetBrains.Annotations;
 using Warcraft.Core.Extensions;
 
 namespace Warcraft.MDX.Geometry
@@ -27,6 +31,7 @@ namespace Warcraft.MDX.Geometry
     /// <summary>
     /// A vertex in an <see cref="MDX"/> model.
     /// </summary>
+    [PublicAPI]
     public class MDXVertex
     {
         /// <summary>
@@ -65,30 +70,15 @@ namespace Warcraft.MDX.Geometry
         /// <summary>
         /// Initializes a new instance of the <see cref="MDXVertex"/> class.
         /// </summary>
-        /// <param name="data">The binary data in which the vertex is stored.</param>
-        public MDXVertex(byte[] data)
+        /// <param name="br">A binary reader pointing at a valid starting point for the data.</param>
+        public MDXVertex(BinaryReader br)
         {
-            using (var ms = new MemoryStream(data))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    Position = br.ReadVector3();
-                    BoneWeights = new List<byte>(br.ReadBytes(4));
-                    BoneIndices = new List<byte>(br.ReadBytes(4));
-                    Normal = br.ReadVector3();
-                    UV1 = br.ReadVector2();
-                    UV2 = br.ReadVector2();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the absolute byte size of a serialized object.
-        /// </summary>
-        /// <returns>The size.</returns>
-        public static int GetSize()
-        {
-            return 48;
+            Position = br.ReadVector3();
+            BoneWeights = new List<byte>(br.ReadBytes(4));
+            BoneIndices = new List<byte>(br.ReadBytes(4));
+            Normal = br.ReadVector3();
+            UV1 = br.ReadVector2();
+            UV2 = br.ReadVector2();
         }
     }
 }

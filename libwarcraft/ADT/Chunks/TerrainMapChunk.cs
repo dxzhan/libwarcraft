@@ -1,7 +1,10 @@
 ﻿//
 //  TerrainMapChunk.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -38,57 +41,57 @@ namespace Warcraft.ADT.Chunks
         /// Gets or sets the header, which contains information about the MCNK and its subchunks such as offsets,
         /// position and flags.
         /// </summary>
-        public MapChunkHeader Header { get; set; }
+        public MapChunkHeader? Header { get; set; }
 
         /// <summary>
         /// Gets or sets the heightmap chunk.
         /// </summary>
-        public MapChunkHeightmap Heightmap { get; set; }
+        public MapChunkHeightmap? Heightmap { get; set; }
 
         /// <summary>
         /// Gets or sets the normal map chunk.
         /// </summary>
-        public MapChunkVertexNormals VertexNormals { get; set; }
+        public MapChunkVertexNormals? VertexNormals { get; set; }
 
         /// <summary>
         /// Gets or sets the alphamap Layer chunk.
         /// </summary>
-        public MapChunkTextureLayers TextureLayers { get; set; }
+        public MapChunkTextureLayers? TextureLayers { get; set; }
 
         /// <summary>
         /// Gets or sets the map Object References chunk.
         /// </summary>
-        public MapChunkModelReferences ModelReferences { get; set; }
+        public MapChunkModelReferences? ModelReferences { get; set; }
 
         /// <summary>
         /// Gets or sets the alphamap chunk.
         /// </summary>
-        public MapChunkAlphaMaps AlphaMaps { get; set; }
+        public MapChunkAlphaMaps? AlphaMaps { get; set; }
 
         /// <summary>
         /// Gets or sets the the baked shadows.
         /// </summary>
-        public MapChunkBakedShadows BakedShadows { get; set; }
+        public MapChunkBakedShadows? BakedShadows { get; set; }
 
         /// <summary>
         /// Gets or sets the sound Emitter chunk.
         /// </summary>
-        public MapChunkSoundEmitters SoundEmitters { get; set; }
+        public MapChunkSoundEmitters? SoundEmitters { get; set; }
 
         /// <summary>
         /// Gets or sets the liquid chunk.
         /// </summary>
-        public MapChunkLiquids Liquid { get; set; }
+        public MapChunkLiquids? Liquid { get; set; }
 
         /// <summary>
         /// Gets or sets the the vertex shading chunk.
         /// </summary>
-        public MapChunkVertexShading VertexShading { get; set; }
+        public MapChunkVertexShading? VertexShading { get; set; }
 
         /// <summary>
         /// Gets or sets the the vertex lighting chunk.
         /// </summary>
-        public MapChunkVertexLighting VertexLighting { get; set; }
+        public MapChunkVertexLighting? VertexLighting { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TerrainMapChunk"/> class.
@@ -109,75 +112,73 @@ namespace Warcraft.ADT.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            Header = new MapChunkHeader(br.ReadBytes(MapChunkHeader.GetSize()));
+
+            if (Header.HeightmapOffset > 0)
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    Header = new MapChunkHeader(br.ReadBytes(MapChunkHeader.GetSize()));
-
-                    if (Header.HeightmapOffset > 0)
-                    {
-                        br.BaseStream.Position = Header.HeightmapOffset;
-                        Heightmap = br.ReadIFFChunk<MapChunkHeightmap>();
-                    }
-
-                    if (Header.VertexNormalOffset > 0)
-                    {
-                        br.BaseStream.Position = Header.VertexNormalOffset;
-                        VertexNormals = br.ReadIFFChunk<MapChunkVertexNormals>();
-                    }
-
-                    if (Header.TextureLayersOffset > 0)
-                    {
-                        br.BaseStream.Position = Header.TextureLayersOffset;
-                        TextureLayers = br.ReadIFFChunk<MapChunkTextureLayers>();
-                    }
-
-                    if (Header.ModelReferencesOffset > 0)
-                    {
-                        br.BaseStream.Position = Header.ModelReferencesOffset;
-                        ModelReferences = br.ReadIFFChunk<MapChunkModelReferences>();
-
-                        ModelReferences.PostLoadReferences(Header.ModelReferenceCount, Header.WorldModelObjectReferenceCount);
-                    }
-
-                    if (Header.AlphaMapsOffset > 0)
-                    {
-                        br.BaseStream.Position = Header.AlphaMapsOffset;
-                        AlphaMaps = br.ReadIFFChunk<MapChunkAlphaMaps>();
-                    }
-
-                    if (Header.BakedShadowsOffset > 0 && Header.Flags.HasFlag(MapChunkFlags.HasBakedShadows))
-                    {
-                        br.BaseStream.Position = Header.BakedShadowsOffset;
-                        BakedShadows = br.ReadIFFChunk<MapChunkBakedShadows>();
-                    }
-
-                    if (Header.SoundEmittersOffset > 0 && Header.SoundEmitterCount > 0)
-                    {
-                        br.BaseStream.Position = Header.SoundEmittersOffset;
-                        SoundEmitters = br.ReadIFFChunk<MapChunkSoundEmitters>();
-                    }
-
-                    if (Header.LiquidOffset > 0 && Header.LiquidSize > 8)
-                    {
-                        br.BaseStream.Position = Header.LiquidOffset;
-                        Liquid = br.ReadIFFChunk<MapChunkLiquids>();
-                    }
-
-                    if (Header.VertexShadingOffset > 0 && Header.Flags.HasFlag(MapChunkFlags.HasVertexShading))
-                    {
-                        br.BaseStream.Position = Header.SoundEmittersOffset;
-                        VertexShading = br.ReadIFFChunk<MapChunkVertexShading>();
-                    }
-
-                    if (Header.VertexLightingOffset > 0)
-                    {
-                        br.BaseStream.Position = Header.VertexLightingOffset;
-                        VertexLighting = br.ReadIFFChunk<MapChunkVertexLighting>();
-                    }
-                }
+                br.BaseStream.Position = Header.HeightmapOffset;
+                Heightmap = br.ReadIFFChunk<MapChunkHeightmap>();
             }
+
+            if (Header.VertexNormalOffset > 0)
+            {
+                br.BaseStream.Position = Header.VertexNormalOffset;
+                VertexNormals = br.ReadIFFChunk<MapChunkVertexNormals>();
+            }
+
+            if (Header.TextureLayersOffset > 0)
+            {
+                br.BaseStream.Position = Header.TextureLayersOffset;
+                TextureLayers = br.ReadIFFChunk<MapChunkTextureLayers>();
+            }
+
+            if (Header.ModelReferencesOffset > 0)
+            {
+                br.BaseStream.Position = Header.ModelReferencesOffset;
+                ModelReferences = br.ReadIFFChunk<MapChunkModelReferences>();
+
+                ModelReferences.PostLoadReferences(Header.ModelReferenceCount, Header.WorldModelObjectReferenceCount);
+            }
+
+            if (Header.AlphaMapsOffset > 0)
+            {
+                br.BaseStream.Position = Header.AlphaMapsOffset;
+                AlphaMaps = br.ReadIFFChunk<MapChunkAlphaMaps>();
+            }
+
+            if (Header.BakedShadowsOffset > 0 && Header.Flags.HasFlag(MapChunkFlags.HasBakedShadows))
+            {
+                br.BaseStream.Position = Header.BakedShadowsOffset;
+                BakedShadows = br.ReadIFFChunk<MapChunkBakedShadows>();
+            }
+
+            if (Header.SoundEmittersOffset > 0 && Header.SoundEmitterCount > 0)
+            {
+                br.BaseStream.Position = Header.SoundEmittersOffset;
+                SoundEmitters = br.ReadIFFChunk<MapChunkSoundEmitters>();
+            }
+
+            if (Header.LiquidOffset > 0 && Header.LiquidSize > 8)
+            {
+                br.BaseStream.Position = Header.LiquidOffset;
+                Liquid = br.ReadIFFChunk<MapChunkLiquids>();
+            }
+
+            if (Header.VertexShadingOffset > 0 && Header.Flags.HasFlag(MapChunkFlags.HasVertexShading))
+            {
+                br.BaseStream.Position = Header.SoundEmittersOffset;
+                VertexShading = br.ReadIFFChunk<MapChunkVertexShading>();
+            }
+
+            if (Header.VertexLightingOffset <= 0)
+            {
+                return;
+            }
+
+            br.BaseStream.Position = Header.VertexLightingOffset;
+            VertexLighting = br.ReadIFFChunk<MapChunkVertexLighting>();
         }
 
         /// <inheritdoc/>

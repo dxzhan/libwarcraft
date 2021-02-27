@@ -1,7 +1,10 @@
 ﻿//
 //  DBCDeserializer.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -96,18 +99,20 @@ namespace Warcraft.Core.Reflection.DBC
             // Create type info for a list of the property's type
             var specificListType = typeof(List<>).MakeGenericType(elementType);
 
-            if (propertyType == specificListType)
+            if (propertyType != specificListType)
             {
-                var list = (IList)Activator.CreateInstance(propertyType);
-                foreach (var value in values)
-                {
-                    list.Add(value);
-                }
-
-                return list;
+                throw new ArgumentException(
+                    $"No compatible object could be created for a property of type {propertyType}",
+                    nameof(propertyType));
             }
 
-            throw new ArgumentException($"No compatible object could be created for a property of type {propertyType}", nameof(propertyType));
+            var list = Activator.CreateInstance(propertyType) as IList ?? throw new InvalidOperationException();
+            foreach (var value in values)
+            {
+                list.Add(value);
+            }
+
+            return list;
         }
 
         /// <summary>
@@ -168,7 +173,7 @@ namespace Warcraft.Core.Reflection.DBC
                 }
             }
 
-            return fieldValue;
+            return fieldValue ?? throw new InvalidOperationException();
         }
 
         /// <summary>
@@ -198,7 +203,7 @@ namespace Warcraft.Core.Reflection.DBC
                 return wrappingType;
             }
 
-            Type innerType = null;
+            Type? innerType = null;
             if (wrappingType.IsGenericType)
             {
                 // Something implementing IList<T>, or a ForeignKey
@@ -219,6 +224,11 @@ namespace Warcraft.Core.Reflection.DBC
             if (wrappingType == typeof(StringReference) || wrappingType == typeof(LocalizedStringReference))
             {
                 return typeof(uint);
+            }
+
+            if (innerType is null)
+            {
+                throw new InvalidOperationException();
             }
 
             return GetUnderlyingStoredPrimitiveType(innerType);

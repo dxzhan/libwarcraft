@@ -1,7 +1,10 @@
 ﻿//
 //  ExtendedModelIO.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -46,17 +49,7 @@ namespace Warcraft.Core.Extensions
         /// <returns>A fully read skin.</returns>
         public static MDXSkin ReadMDXSkin(this BinaryReader binaryReader, WarcraftVersion version)
         {
-            var skin = new MDXSkin
-            {
-                VertexIndices = binaryReader.ReadMDXArray<ushort>(),
-                Triangles = binaryReader.ReadMDXArray<ushort>(),
-                VertexProperties = binaryReader.ReadMDXArray<MDXVertexProperty>(),
-                Sections = binaryReader.ReadMDXArray<MDXSkinSection>(version),
-                RenderBatches = binaryReader.ReadMDXArray<MDXRenderBatch>(),
-                BoneCountMax = binaryReader.ReadUInt32()
-            };
-
-            return skin;
+            return new MDXSkin(binaryReader, version);
         }
 
         /// <summary>
@@ -67,6 +60,7 @@ namespace Warcraft.Core.Extensions
         /// <typeparam name="T">The type which the array encapsulates.</typeparam>
         /// <returns>A new array, filled with the values it references.</returns>
         public static MDXArray<T> ReadMDXArray<T>(this BinaryReader binaryReader)
+            where T : notnull
         {
             if (typeof(T).GetInterfaces().Contains(typeof(IVersionedClass)))
             {
@@ -85,6 +79,7 @@ namespace Warcraft.Core.Extensions
         /// <typeparam name="T">The type which the array encapsulates.</typeparam>
         /// <returns>A new array, filled with the values it references.</returns>
         public static MDXArray<T> ReadMDXArray<T>(this BinaryReader binaryReader, WarcraftVersion version)
+            where T : notnull
         {
             // Quaternion hack, since it's packed into 16 bits in some versions
             var containsQuaternion = FindInnermostGenericType(typeof(T)) == typeof(Quaternion);
@@ -256,7 +251,13 @@ namespace Warcraft.Core.Extensions
         /// </param>
         /// <typeparam name="T">The type of the track.</typeparam>
         /// <returns>The value.</returns>
-        public static MDXTrack<T> ReadMDXTrack<T>(this BinaryReader binaryReader, WarcraftVersion version, bool valueless = false)
+        public static MDXTrack<T> ReadMDXTrack<T>
+        (
+            this BinaryReader binaryReader,
+            WarcraftVersion version,
+            bool valueless = false
+        )
+            where T : unmanaged
         {
             return new MDXTrack<T>(binaryReader, version, valueless);
         }
@@ -290,7 +291,7 @@ namespace Warcraft.Core.Extensions
         /// <returns>The value.</returns>
         public static MDXVertex ReadMDXVertex(this BinaryReader binaryReader)
         {
-            return new MDXVertex(binaryReader.ReadBytes(MDXVertex.GetSize()));
+            return new MDXVertex(binaryReader);
         }
 
         /// <summary>
@@ -328,7 +329,7 @@ namespace Warcraft.Core.Extensions
         /// <returns>The value.</returns>
         public static MDXSkinSection ReadMDXSkinSection(this BinaryReader binaryReader, WarcraftVersion version)
         {
-            return new MDXSkinSection(binaryReader.ReadBytes(MDXSkinSection.GetSize(version)));
+            return new MDXSkinSection(binaryReader, version);
         }
 
         /// <summary>
@@ -338,7 +339,7 @@ namespace Warcraft.Core.Extensions
         /// <returns>The value.</returns>
         public static MDXRenderBatch ReadMDXRenderBatch(this BinaryReader binaryReader)
         {
-            return new MDXRenderBatch(binaryReader.ReadBytes(MDXRenderBatch.GetSize()));
+            return new MDXRenderBatch(binaryReader);
         }
     }
 }

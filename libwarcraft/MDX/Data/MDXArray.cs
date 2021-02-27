@@ -1,7 +1,10 @@
 //
 //  MDXArray.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -31,7 +34,7 @@ namespace Warcraft.MDX.Data
     /// stored.
     /// </summary>
     /// <typeparam name="T">The contained type.</typeparam>
-    public class MDXArray<T> : IEnumerable<T>
+    public class MDXArray<T> : IEnumerable<T> where T : notnull
     {
         /// <summary>
         /// Gets or sets the number of elements in the array.
@@ -84,14 +87,10 @@ namespace Warcraft.MDX.Data
         public MDXArray(byte[] data)
         {
             _isFilled = false;
-            using (var ms = new MemoryStream(data))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    Count = br.ReadUInt32();
-                    ElementsOffset = br.ReadUInt32();
-                }
-            }
+            using var ms = new MemoryStream(data);
+            using var br = new BinaryReader(ms);
+            Count = br.ReadUInt32();
+            ElementsOffset = br.ReadUInt32();
         }
 
         /// <summary>

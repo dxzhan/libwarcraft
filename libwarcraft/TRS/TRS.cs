@@ -1,7 +1,10 @@
 //
 //  TRS.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -38,22 +41,23 @@ namespace Warcraft.TRS
         /// <param name="data">The binary data.</param>
         public TRS(byte[] data)
         {
-            using (var ms = new MemoryStream(data))
+            using var ms = new MemoryStream(data);
+            using TextReader tr = new StreamReader(ms);
+            while (ms.Position != ms.Length)
             {
-                using (TextReader tr = new StreamReader(ms))
+                var mappingLine = tr.ReadLine();
+                if (mappingLine is null)
                 {
-                    while (ms.Position != ms.Length)
-                    {
-                        var mappingLine = tr.ReadLine();
-                        if (mappingLine.StartsWith("dir:"))
-                        {
-                            continue;
-                        }
-
-                        var lineParts = mappingLine.Split('\t');
-                        HashMappings.Add(lineParts[0], lineParts[1]);
-                    }
+                    continue;
                 }
+
+                if (mappingLine.StartsWith("dir:"))
+                {
+                    continue;
+                }
+
+                var lineParts = mappingLine.Split('\t');
+                HashMappings.Add(lineParts[0], lineParts[1]);
             }
         }
     }

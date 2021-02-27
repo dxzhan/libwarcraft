@@ -1,7 +1,10 @@
 ﻿//
 //  MapChunkAlphaMaps.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -38,7 +41,7 @@ namespace Warcraft.ADT.Chunks.Subchunks
         /// <summary>
         /// Holds unformatted data contained in the chunk.
         /// </summary>
-        private byte[] _data;
+        private byte[]? _data;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MapChunkAlphaMaps"/> class.
@@ -70,36 +73,40 @@ namespace Warcraft.ADT.Chunks.Subchunks
 
         private IEnumerable<byte> DecompressAlphaMap(uint mapOffset)
         {
+            if (_data is null)
+            {
+                // Empty map
+                return new List<byte>(4096);
+            }
+
             var decompressedAlphaMap = new List<byte>();
 
             using (var ms = new MemoryStream(_data))
             {
-                using (var br = new BinaryReader(ms))
+                using var br = new BinaryReader(ms);
+                br.BaseStream.Position = mapOffset;
+
+                while (decompressedAlphaMap.Count < 4096)
                 {
-                    br.BaseStream.Position = mapOffset;
+                    var headerByte = br.ReadSByte();
+                    int compressionCount = Math.Abs(headerByte);
 
-                    while (decompressedAlphaMap.Count > 4096)
+                    // The mode of the compression depends on the sign bit being true or false.
+                    // Thus, we can simply switch depending on whether or not the "header byte" is
+                    // negative or not.
+                    if (headerByte > 0)
                     {
-                        var headerByte = br.ReadSByte();
-                        int compressionCount = Math.Abs(headerByte);
+                        // Copy mode
+                        decompressedAlphaMap.AddRange(br.ReadBytes(compressionCount));
+                    }
+                    else
+                    {
+                        // Fill mode
+                        var fillByte = br.ReadByte();
 
-                        // The mode of the compression depends on the sign bit being true or false.
-                        // Thus, we can simply switch depending on whether or not the "header byte" is
-                        // negative or not.
-                        if (headerByte > 0)
+                        for (var i = 0; i < compressionCount; ++i)
                         {
-                            // Copy mode
-                            decompressedAlphaMap.AddRange(br.ReadBytes(compressionCount));
-                        }
-                        else
-                        {
-                            // Fill mode
-                            var fillByte = br.ReadByte();
-
-                            for (var i = 0; i < compressionCount; ++i)
-                            {
-                                decompressedAlphaMap.Add(fillByte);
-                            }
+                            decompressedAlphaMap.Add(fillByte);
                         }
                     }
                 }

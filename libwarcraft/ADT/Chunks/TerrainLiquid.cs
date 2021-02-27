@@ -1,7 +1,10 @@
 ﻿//
 //  TerrainLiquid.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -58,35 +61,31 @@ namespace Warcraft.ADT.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            for (var i = 0; i < 256; ++i)
             {
-                using (var br = new BinaryReader(ms))
+                LiquidChunks.Add(new TerrainLiquidChunk(br.ReadBytes(TerrainLiquidChunk.GetSize())));
+            }
+
+            foreach (var liquidChunk in LiquidChunks)
+            {
+                br.BaseStream.Position = liquidChunk.WaterInstanceOffset;
+                for (var i = 0; i < liquidChunk.LayerCount; ++i)
                 {
-                    for (var i = 0; i < 256; ++i)
-                    {
-                        LiquidChunks.Add(new TerrainLiquidChunk(br.ReadBytes(TerrainLiquidChunk.GetSize())));
-                    }
+                    var instanceData = br.ReadBytes(TerrainLiquidInstance.GetSize());
+                    liquidChunk.LiquidInstances.Add(new TerrainLiquidInstance(instanceData));
+                }
 
-                    foreach (var liquidChunk in LiquidChunks)
-                    {
-                        br.BaseStream.Position = liquidChunk.WaterInstanceOffset;
-                        for (var i = 0; i < liquidChunk.LayerCount; ++i)
-                        {
-                            var instanceData = br.ReadBytes(TerrainLiquidInstance.GetSize());
-                            liquidChunk.LiquidInstances.Add(new TerrainLiquidInstance(instanceData));
-                        }
-
-                        br.BaseStream.Position = liquidChunk.AttributesOffset;
-                        if (liquidChunk.LayerCount > 0)
-                        {
-                            var attributeData = br.ReadBytes(TerrainLiquidAttributes.GetSize());
-                            liquidChunk.LiquidAttributes = new TerrainLiquidAttributes(attributeData);
-                        }
-                        else
-                        {
-                            liquidChunk.LiquidAttributes = new TerrainLiquidAttributes();
-                        }
-                    }
+                br.BaseStream.Position = liquidChunk.AttributesOffset;
+                if (liquidChunk.LayerCount > 0)
+                {
+                    var attributeData = br.ReadBytes(TerrainLiquidAttributes.GetSize());
+                    liquidChunk.LiquidAttributes = new TerrainLiquidAttributes(attributeData);
+                }
+                else
+                {
+                    liquidChunk.LiquidAttributes = new TerrainLiquidAttributes();
                 }
             }
         }

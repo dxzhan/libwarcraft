@@ -1,7 +1,10 @@
 ﻿//
 //  MapChunkModelReferences.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -33,7 +36,7 @@ namespace Warcraft.ADT.Chunks.Subchunks
         /// </summary>
         public const string Signature = "MCRF";
 
-        private byte[] _data;
+        private byte[]? _data;
 
         /// <summary>
         /// Gets or sets the game model references.
@@ -80,20 +83,21 @@ namespace Warcraft.ADT.Chunks.Subchunks
         /// <param name="worldModelObjectCount">The number of world model objects in the chunk.</param>
         public void PostLoadReferences(uint gameModelObjectCount, uint worldModelObjectCount)
         {
-            using (var ms = new MemoryStream(_data))
+            if (_data is null)
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    for (var i = 0; i < gameModelObjectCount; ++i)
-                    {
-                        GameModelObjectReferences.Add(br.ReadUInt32());
-                    }
+                return;
+            }
 
-                    for (var i = 0; i < worldModelObjectCount; ++i)
-                    {
-                        WorldModelObjectReferences.Add(br.ReadUInt32());
-                    }
-                }
+            using var ms = new MemoryStream(_data);
+            using var br = new BinaryReader(ms);
+            for (var i = 0; i < gameModelObjectCount; ++i)
+            {
+                GameModelObjectReferences.Add(br.ReadUInt32());
+            }
+
+            for (var i = 0; i < worldModelObjectCount; ++i)
+            {
+                WorldModelObjectReferences.Add(br.ReadUInt32());
             }
         }
     }

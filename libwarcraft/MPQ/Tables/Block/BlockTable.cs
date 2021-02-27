@@ -1,7 +1,10 @@
 //
 //  BlockTable.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -45,16 +48,12 @@ namespace Warcraft.MPQ.Tables.Block
         [PublicAPI]
         public BlockTable([NotNull] byte[] data)
         {
-            using (var ms = new MemoryStream(data))
+            using var ms = new MemoryStream(data);
+            using var br = new BinaryReader(ms);
+            for (long i = 0; i < data.Length; i += BlockTableEntry.GetSize())
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    for (long i = 0; i < data.Length; i += BlockTableEntry.GetSize())
-                    {
-                        var entryBytes = br.ReadBytes((int)BlockTableEntry.GetSize());
-                        _entries.Add(new BlockTableEntry(entryBytes));
-                    }
-                }
+                var entryBytes = br.ReadBytes((int)BlockTableEntry.GetSize());
+                _entries.Add(new BlockTableEntry(entryBytes));
             }
         }
 
@@ -64,19 +63,17 @@ namespace Warcraft.MPQ.Tables.Block
         /// <returns>The serialized bytes.</returns>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
+                foreach (var entry in _entries)
                 {
-                    foreach (var entry in _entries)
-                    {
-                        bw.Write(entry.Serialize());
-                    }
+                    bw.Write(entry.Serialize());
                 }
-
-                var encryptedTable = MPQCrypt.EncryptData(ms.ToArray(), TableKey);
-                return encryptedTable;
             }
+
+            var encryptedTable = MPQCrypt.EncryptData(ms.ToArray(), TableKey);
+            return encryptedTable;
         }
 
         /// <summary>

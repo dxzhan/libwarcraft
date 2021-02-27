@@ -1,7 +1,10 @@
 ﻿//
 //  BLS.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -46,28 +49,24 @@ namespace Warcraft.BLS
         /// <param name="inData">The binary data containing the BLS file.</param>
         public BLS(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            Header = new BLSHeader(br.ReadBytes(BLSHeader.GetSize()));
+
+            for (var i = 0; i < Header.ShaderBlockCount; ++i)
             {
-                using (var br = new BinaryReader(ms))
+                var shaderBlock = new ShaderBlock(br.ReadBytes(ShaderBlock.GetSize()));
+                shaderBlock.Data = br.ReadChars((int)shaderBlock.DataSize);
+
+                Shaders.Add(shaderBlock);
+
+                if ((ms.Position % 4) == 0)
                 {
-                    Header = new BLSHeader(br.ReadBytes(BLSHeader.GetSize()));
-
-                    for (var i = 0; i < Header.ShaderBlockCount; ++i)
-                    {
-                        var shaderBlock = new ShaderBlock(br.ReadBytes(ShaderBlock.GetSize()));
-                        shaderBlock.Data = br.ReadChars((int)shaderBlock.DataSize);
-
-                        Shaders.Add(shaderBlock);
-
-                        if ((ms.Position % 4) == 0)
-                        {
-                            continue;
-                        }
-
-                        var padCount = 4 - (ms.Position % 4);
-                        ms.Position += padCount;
-                    }
+                    continue;
                 }
+
+                var padCount = 4 - (ms.Position % 4);
+                ms.Position += padCount;
             }
         }
 
@@ -77,19 +76,17 @@ namespace Warcraft.BLS
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
+                bw.Write(Header.Serialize());
+                foreach (var shaderBlock in Shaders)
                 {
-                    bw.Write(Header.Serialize());
-                    foreach (var shaderBlock in Shaders)
-                    {
-                        bw.Write(shaderBlock.Serialize());
-                    }
+                    bw.Write(shaderBlock.Serialize());
                 }
-
-                return ms.ToArray();
             }
+
+            return ms.ToArray();
         }
     }
 }

@@ -1,7 +1,10 @@
 ﻿//
 //  TerrainWorldModelObjectIndices.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -57,16 +60,12 @@ namespace Warcraft.ADT.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            var offsetCount = inData.Length / 4;
+            for (var i = 0; i < offsetCount; ++i)
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    var offsetCount = inData.Length / 4;
-                    for (var i = 0; i < offsetCount; ++i)
-                    {
-                        WorldModelObjectFilenameOffsets.Add(br.ReadUInt32());
-                    }
-                }
+                WorldModelObjectFilenameOffsets.Add(br.ReadUInt32());
             }
         }
 
@@ -79,18 +78,16 @@ namespace Warcraft.ADT.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
+                foreach (var filenameOffset in WorldModelObjectFilenameOffsets)
                 {
-                    foreach (var filenameOffset in WorldModelObjectFilenameOffsets)
-                    {
-                        bw.Write(filenameOffset);
-                    }
+                    bw.Write(filenameOffset);
                 }
-
-                return ms.ToArray();
             }
+
+            return ms.ToArray();
         }
     }
 }

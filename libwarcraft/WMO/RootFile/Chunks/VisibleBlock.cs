@@ -1,7 +1,10 @@
 //
 //  VisibleBlock.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -43,14 +46,10 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <param name="inData">The binary data.</param>
         public VisibleBlock(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    FirstVertexIndex = br.ReadUInt16();
-                    VertexCount = br.ReadUInt16();
-                }
-            }
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            FirstVertexIndex = br.ReadUInt16();
+            VertexCount = br.ReadUInt16();
         }
 
         /// <summary>
@@ -65,16 +64,14 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
-                {
-                    bw.Write(FirstVertexIndex);
-                    bw.Write(VertexCount);
-                }
-
-                return ms.ToArray();
+                bw.Write(FirstVertexIndex);
+                bw.Write(VertexCount);
             }
+
+            return ms.ToArray();
         }
     }
 }

@@ -1,7 +1,10 @@
 //
 //  ModelMaterial.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -77,7 +80,7 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <summary>
         /// Gets or sets the ground type of the material.
         /// </summary>
-        public ForeignKey<uint> GroundType { get; set; }
+        public ForeignKey<uint> GroundType { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the offset to the specular texture.
@@ -121,7 +124,7 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <summary>
         /// Gets or sets the name of the diffuse texture.
         /// </summary>
-        public string DiffuseTexture
+        public string? DiffuseTexture
         {
             get;
             set;
@@ -130,7 +133,7 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <summary>
         /// Gets or sets the name of the environment map texture.
         /// </summary>
-        public string EnvironmentMapTexture
+        public string? EnvironmentMapTexture
         {
             get;
             set;
@@ -139,7 +142,7 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <summary>
         /// Gets or sets the name of the specularity texture.
         /// </summary>
-        public string SpecularTexture
+        public string? SpecularTexture
         {
             get;
             set;
@@ -151,32 +154,28 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <param name="inData">The binary data.</param>
         public ModelMaterial(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    Flags = (MaterialFlags)br.ReadUInt32();
-                    Shader = (WMOFragmentShaderType)br.ReadUInt32();
-                    BlendMode = (BlendingMode)br.ReadUInt32();
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            Flags = (MaterialFlags)br.ReadUInt32();
+            Shader = (WMOFragmentShaderType)br.ReadUInt32();
+            BlendMode = (BlendingMode)br.ReadUInt32();
 
-                    DiffuseTextureOffset = br.ReadUInt32();
-                    EmissiveColour = br.ReadRGBA();
-                    FrameEmissiveColour = br.ReadRGBA();
+            DiffuseTextureOffset = br.ReadUInt32();
+            EmissiveColour = br.ReadRGBA();
+            FrameEmissiveColour = br.ReadRGBA();
 
-                    EnvironmentMapTextureOffset = br.ReadUInt32();
-                    DiffuseColour = br.ReadRGBA();
+            EnvironmentMapTextureOffset = br.ReadUInt32();
+            DiffuseColour = br.ReadRGBA();
 
-                    GroundType = new ForeignKey<uint>(DatabaseName.TerrainType, nameof(DBCRecord.ID), br.ReadUInt32()); // TODO: Implement TerrainTypeRecord
-                    SpecularTextureOffset = br.ReadUInt32();
-                    BaseDiffuseColour = br.ReadRGBA();
-                    UnknownFlags = br.ReadUInt32();
+            GroundType = new ForeignKey<uint>(DatabaseName.TerrainType, nameof(DBCRecord.ID), br.ReadUInt32()); // TODO: Implement TerrainTypeRecord
+            SpecularTextureOffset = br.ReadUInt32();
+            BaseDiffuseColour = br.ReadRGBA();
+            UnknownFlags = br.ReadUInt32();
 
-                    RuntimeData1 = br.ReadUInt32();
-                    RuntimeData2 = br.ReadUInt32();
-                    RuntimeData3 = br.ReadUInt32();
-                    RuntimeData4 = br.ReadUInt32();
-                }
-            }
+            RuntimeData1 = br.ReadUInt32();
+            RuntimeData2 = br.ReadUInt32();
+            RuntimeData3 = br.ReadUInt32();
+            RuntimeData4 = br.ReadUInt32();
         }
 
         /// <summary>
@@ -191,34 +190,32 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
-                {
-                    bw.Write((uint)Flags);
-                    bw.Write((uint)Shader);
-                    bw.Write((uint)BlendMode);
+                bw.Write((uint)Flags);
+                bw.Write((uint)Shader);
+                bw.Write((uint)BlendMode);
 
-                    bw.Write(DiffuseTextureOffset);
-                    bw.WriteRGBA(EmissiveColour);
-                    bw.WriteRGBA(FrameEmissiveColour);
+                bw.Write(DiffuseTextureOffset);
+                bw.WriteRGBA(EmissiveColour);
+                bw.WriteRGBA(FrameEmissiveColour);
 
-                    bw.Write(EnvironmentMapTextureOffset);
-                    bw.WriteRGBA(DiffuseColour);
+                bw.Write(EnvironmentMapTextureOffset);
+                bw.WriteRGBA(DiffuseColour);
 
-                    bw.Write(GroundType.Key);
-                    bw.Write(SpecularTextureOffset);
-                    bw.WriteRGBA(BaseDiffuseColour);
-                    bw.Write(UnknownFlags);
+                bw.Write(GroundType.Key);
+                bw.Write(SpecularTextureOffset);
+                bw.WriteRGBA(BaseDiffuseColour);
+                bw.Write(UnknownFlags);
 
-                    bw.Write(RuntimeData1);
-                    bw.Write(RuntimeData2);
-                    bw.Write(RuntimeData3);
-                    bw.Write(RuntimeData4);
-                }
-
-                return ms.ToArray();
+                bw.Write(RuntimeData1);
+                bw.Write(RuntimeData2);
+                bw.Write(RuntimeData3);
+                bw.Write(RuntimeData4);
             }
+
+            return ms.ToArray();
         }
     }
 }

@@ -1,7 +1,10 @@
 //
 //  ModelPlacementEntry.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -67,19 +70,15 @@ namespace Warcraft.ADT.Chunks
         /// <param name="data">ExtendedData.</param>
         public ModelPlacementEntry(byte[] data)
         {
-            using (var ms = new MemoryStream(data))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    ModelEntryIndex = br.ReadUInt32();
-                    UniqueID = br.ReadUInt32();
-                    Position = br.ReadVector3();
-                    Rotation = br.ReadRotator();
+            using var ms = new MemoryStream(data);
+            using var br = new BinaryReader(ms);
+            ModelEntryIndex = br.ReadUInt32();
+            UniqueID = br.ReadUInt32();
+            Position = br.ReadVector3();
+            Rotation = br.ReadRotator();
 
-                    ScalingFactor = br.ReadUInt16();
-                    Flags = (ModelPlacementFlags)br.ReadUInt16();
-                }
-            }
+            ScalingFactor = br.ReadUInt16();
+            Flags = (ModelPlacementFlags)br.ReadUInt16();
         }
 
         /// <summary>

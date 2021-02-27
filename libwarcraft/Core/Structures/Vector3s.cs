@@ -1,7 +1,10 @@
 //
 //  Vector3s.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -160,13 +163,13 @@ namespace Warcraft.Core.Structures
         }
 
         /// <inheritdoc />
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"{X}, {Y}, {Z}";
         }
 
         /// <inheritdoc />
-        public IReadOnlyCollection<short> Flatten()
+        public readonly IReadOnlyCollection<short> Flatten()
         {
             return new[] { X, Y, Z };
         }

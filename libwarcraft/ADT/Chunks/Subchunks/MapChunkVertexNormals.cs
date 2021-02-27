@@ -1,7 +1,10 @@
 ﻿//
 //  MapChunkVertexNormals.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -64,36 +67,32 @@ namespace Warcraft.ADT.Chunks.Subchunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            for (var y = 0; y < 16; ++y)
             {
-                using (var br = new BinaryReader(ms))
+                if (y % 2 == 0)
                 {
-                    for (var y = 0; y < 16; ++y)
+                    // Read a block of 9 high res normals
+                    for (var x = 0; x < 9; ++x)
                     {
-                        if (y % 2 == 0)
-                        {
-                            // Read a block of 9 high res normals
-                            for (var x = 0; x < 9; ++x)
-                            {
-                                var normX = br.ReadSByte();
-                                var normZ = br.ReadSByte();
-                                var normY = br.ReadSByte();
+                        var normX = br.ReadSByte();
+                        var normZ = br.ReadSByte();
+                        var normY = br.ReadSByte();
 
-                                HighResVertexNormals.Add(new Vector3(normX, normY, normZ));
-                            }
-                        }
-                        else
-                        {
-                            // Read a block of 8 low res normals
-                            for (var x = 0; x < 8; ++x)
-                            {
-                                var normX = br.ReadSByte();
-                                var normZ = br.ReadSByte();
-                                var normY = br.ReadSByte();
+                        HighResVertexNormals.Add(new Vector3(normX, normY, normZ));
+                    }
+                }
+                else
+                {
+                    // Read a block of 8 low res normals
+                    for (var x = 0; x < 8; ++x)
+                    {
+                        var normX = br.ReadSByte();
+                        var normZ = br.ReadSByte();
+                        var normY = br.ReadSByte();
 
-                                LowResVertexNormals.Add(new Vector3(normX, normY, normZ));
-                            }
-                        }
+                        LowResVertexNormals.Add(new Vector3(normX, normY, normZ));
                     }
                 }
             }

@@ -1,7 +1,10 @@
 //
 //  MDXTrack.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -34,6 +37,7 @@ namespace Warcraft.MDX.Animation
     /// </summary>
     /// <typeparam name="T">The contained type.</typeparam>
     public class MDXTrack<T> : IVersionedClass
+        where T : unmanaged
     {
         /// <summary>
         /// Gets a value indicating whether the timelines are as one composite timeline, or as separate timelines.
@@ -57,17 +61,17 @@ namespace Warcraft.MDX.Animation
         /// <summary>
         /// Gets the composite interpolation ranges.
         /// </summary>
-        public MDXArray<IntegerRange> CompositeTimelineInterpolationRanges { get; }
+        public MDXArray<IntegerRange>? CompositeTimelineInterpolationRanges { get; }
 
         /// <summary>
         /// Gets the composite timestamps.
         /// </summary>
-        public MDXArray<uint> CompositeTimelineTimestamps { get; }
+        public MDXArray<uint>? CompositeTimelineTimestamps { get; }
 
         /// <summary>
         /// Gets the composite values.
         /// </summary>
-        public MDXArray<T> CompositeTimelineValues { get; }
+        public MDXArray<T>? CompositeTimelineValues { get; }
 
         /*
             >= Wrath
@@ -76,12 +80,12 @@ namespace Warcraft.MDX.Animation
         /// <summary>
         /// Gets the timestamps.
         /// </summary>
-        public MDXArray<MDXArray<uint>> Timestamps { get; }
+        public MDXArray<MDXArray<uint>>? Timestamps { get; }
 
         /// <summary>
         /// Gets the values.
         /// </summary>
-        public MDXArray<MDXArray<T>> Values { get; }
+        public MDXArray<MDXArray<T>>? Values { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Warcraft.MDX.Animation.MDXTrack{T}"/> class.

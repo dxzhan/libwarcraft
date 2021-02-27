@@ -1,7 +1,10 @@
 //
 //  ModelDoodadInstances.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -57,16 +60,12 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            var instanceCount = inData.Length / DoodadInstance.GetSize();
+            for (var i = 0; i < instanceCount; ++i)
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    var instanceCount = inData.Length / DoodadInstance.GetSize();
-                    for (var i = 0; i < instanceCount; ++i)
-                    {
-                        DoodadInstances.Add(new DoodadInstance(br.ReadBytes(DoodadInstance.GetSize())));
-                    }
-                }
+                DoodadInstances.Add(new DoodadInstance(br.ReadBytes(DoodadInstance.GetSize())));
             }
         }
 
@@ -79,18 +78,16 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
+                foreach (var doodadInstance in DoodadInstances)
                 {
-                    foreach (var doodadInstance in DoodadInstances)
-                    {
-                        bw.Write(doodadInstance.Serialize());
-                    }
+                    bw.Write(doodadInstance.Serialize());
                 }
-
-                return ms.ToArray();
             }
+
+            return ms.ToArray();
         }
     }
 }

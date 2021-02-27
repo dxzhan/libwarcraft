@@ -1,7 +1,10 @@
 ﻿//
 //  Box.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -57,13 +60,13 @@ namespace Warcraft.Core.Structures
         /// Gets the coordinates of the center of the box.
         /// </summary>
         /// <returns>A vector with the coordinates of the center of the box.</returns>
-        public Vector3 GetCenterCoordinates()
+        public readonly Vector3 GetCenterCoordinates()
         {
             return (BottomCorner + TopCorner) / 2;
         }
 
         /// <inheritdoc />
-        public IReadOnlyCollection<float> Flatten()
+        public readonly IReadOnlyCollection<float> Flatten()
         {
             return TopCorner.Flatten().Concat(BottomCorner.Flatten()).ToArray();
         }

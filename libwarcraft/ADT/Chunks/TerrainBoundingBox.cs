@@ -1,7 +1,10 @@
 ﻿//
 //  TerrainBoundingBox.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -56,14 +59,10 @@ namespace Warcraft.ADT.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    Maximum = br.ReadShortPlane();
-                    Minimum = br.ReadShortPlane();
-                }
-            }
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            Maximum = br.ReadShortPlane();
+            Minimum = br.ReadShortPlane();
         }
 
         /// <inheritdoc/>
@@ -75,16 +74,14 @@ namespace Warcraft.ADT.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
-                {
-                    bw.WriteShortPlane(Maximum);
-                    bw.WriteShortPlane(Minimum);
-                }
-
-                return ms.ToArray();
+                bw.WriteShortPlane(Maximum);
+                bw.WriteShortPlane(Minimum);
             }
+
+            return ms.ToArray();
         }
     }
 }

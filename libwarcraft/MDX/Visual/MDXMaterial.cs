@@ -1,7 +1,10 @@
 //
 //  MDXMaterial.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -74,17 +77,17 @@ namespace Warcraft.MDX.Visual
                 return BlendingMode.NoAlphaAdditive;
             }
 
-            if (blendingMode > 3)
+            if (blendingMode <= 3)
             {
-                if (blendingMode == 7)
-                {
-                    return BlendingMode.BlendAdditive;
-                }
-
-                return (BlendingMode)(blendingMode - 1);
+                return (BlendingMode)blendingMode;
             }
 
-            return (BlendingMode)blendingMode;
+            if (blendingMode == 7)
+            {
+                return BlendingMode.BlendAdditive;
+            }
+
+            return (BlendingMode)(blendingMode - 1);
         }
     }
 }

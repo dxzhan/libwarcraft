@@ -1,7 +1,10 @@
 ﻿//
 //  SplineKey.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -26,7 +29,7 @@ namespace Warcraft.Core.Structures
     /// Represents a key value in a spline.
     /// </summary>
     /// <typeparam name="T">The type of the key.</typeparam>
-    public class SplineKey<T>
+    public struct SplineKey<T>
     {
         /// <summary>
         /// Gets or sets the value of the key.
@@ -44,7 +47,7 @@ namespace Warcraft.Core.Structures
         public T OutTangent { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SplineKey{T}"/> class.
+        /// Initializes a new instance of the <see cref="SplineKey{T}"/> struct.
         /// </summary>
         /// <param name="br">The reader to use when reading the key.</param>
         public SplineKey(BinaryReader br)

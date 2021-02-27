@@ -1,7 +1,10 @@
 //
 //  MDXRenderBatch.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -18,6 +21,7 @@
 //
 
 using System.IO;
+using JetBrains.Annotations;
 using Warcraft.MDX.Geometry.Skin;
 
 namespace Warcraft.MDX.Visual
@@ -27,6 +31,7 @@ namespace Warcraft.MDX.Visual
     /// with a single <see cref="MDXSkinSection"/>. Multiple batches may be associated with a single skin, and will
     /// then be layered on top of each other, ordered by <see cref="MaterialLayer"/>.
     /// </summary>
+    [PublicAPI]
     public class MDXRenderBatch
     {
         /// <summary>
@@ -104,40 +109,25 @@ namespace Warcraft.MDX.Visual
         /// <summary>
         /// Initializes a new instance of the <see cref="MDXRenderBatch"/> class.
         /// </summary>
-        /// <param name="data">The binary data containing the batch.</param>
-        public MDXRenderBatch(byte[] data)
+        /// <param name="br">A binary reader pointing at a valid starting point for the data.</param>
+        public MDXRenderBatch(BinaryReader br)
         {
-            using (var ms = new MemoryStream(data))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    Flags = (MDXRenderBatchFlags)br.ReadByte();
-                    PriorityPlane = br.ReadSByte();
+            Flags = (MDXRenderBatchFlags)br.ReadByte();
+            PriorityPlane = br.ReadSByte();
 
-                    ShaderID = br.ReadUInt16();
+            ShaderID = br.ReadUInt16();
 
-                    SkinSectionIndex = br.ReadUInt16();
-                    GeosetIndex = br.ReadUInt16();
-                    ColorIndex = br.ReadInt16();
-                    MaterialIndex = br.ReadUInt16();
-                    MaterialLayer = br.ReadUInt16();
-                    TextureCount = br.ReadUInt16();
+            SkinSectionIndex = br.ReadUInt16();
+            GeosetIndex = br.ReadUInt16();
+            ColorIndex = br.ReadInt16();
+            MaterialIndex = br.ReadUInt16();
+            MaterialLayer = br.ReadUInt16();
+            TextureCount = br.ReadUInt16();
 
-                    TextureLookupTableIndex = br.ReadUInt16();
-                    TextureMappingLookupTableIndex = br.ReadUInt16();
-                    TransparencyLookupTableIndex = br.ReadUInt16();
-                    TextureTransformLookupTableIndex = br.ReadUInt16();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the absolute byte size of a serialized object.
-        /// </summary>
-        /// <returns>The size.</returns>
-        public static int GetSize()
-        {
-            return 24;
+            TextureLookupTableIndex = br.ReadUInt16();
+            TextureMappingLookupTableIndex = br.ReadUInt16();
+            TransparencyLookupTableIndex = br.ReadUInt16();
+            TextureTransformLookupTableIndex = br.ReadUInt16();
         }
     }
 }

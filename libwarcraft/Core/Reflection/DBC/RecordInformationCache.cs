@@ -1,7 +1,10 @@
 ﻿//
 //  RecordInformationCache.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -55,11 +58,13 @@ namespace Warcraft.Core.Reflection.DBC
         public RecordFieldInformation GetRecordInformation(Type recordType, WarcraftVersion version)
         {
             var infoKey = new RecordInformationIdentifier(recordType, version);
-            if (!_informationCache.ContainsKey(infoKey))
+            if (_informationCache.ContainsKey(infoKey))
             {
-                var recordInfo = new RecordFieldInformation(recordType, version);
-                _informationCache.Add(infoKey, recordInfo);
+                return _informationCache[infoKey];
             }
+
+            var recordInfo = new RecordFieldInformation(recordType, version);
+            _informationCache.Add(infoKey, recordInfo);
 
             return _informationCache[infoKey];
         }

@@ -1,7 +1,10 @@
 ﻿//
 //  ModelDoodadSets.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -66,16 +69,12 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            var setCount = inData.Length / DoodadSet.GetSize();
+            for (uint i = 0; i < setCount; ++i)
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    var setCount = inData.Length / DoodadSet.GetSize();
-                    for (uint i = 0; i < setCount; ++i)
-                    {
-                        DoodadSets.Add(new DoodadSet(br.ReadBytes(DoodadSet.GetSize())));
-                    }
-                }
+                DoodadSets.Add(new DoodadSet(br.ReadBytes(DoodadSet.GetSize())));
             }
         }
 
@@ -95,18 +94,16 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
+                foreach (var doodadSet in DoodadSets)
                 {
-                    foreach (var doodadSet in DoodadSets)
-                    {
-                        bw.Write(doodadSet.Serialize());
-                    }
+                    bw.Write(doodadSet.Serialize());
                 }
-
-                return ms.ToArray();
             }
+
+            return ms.ToArray();
         }
     }
 }

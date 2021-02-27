@@ -1,7 +1,10 @@
 ﻿//
 //  ModelSkybox.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -36,7 +39,7 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <summary>
         /// Gets or sets the skybox name.
         /// </summary>
-        public string SkyboxName { get; set; }
+        public string? SkyboxName { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelSkybox"/> class.
@@ -57,13 +60,9 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    SkyboxName = br.ReadNullTerminatedString();
-                }
-            }
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            SkyboxName = br.ReadNullTerminatedString();
         }
 
         /// <inheritdoc/>
@@ -75,22 +74,20 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
+                if (string.IsNullOrEmpty(SkyboxName))
                 {
-                    if (string.IsNullOrEmpty(SkyboxName))
-                    {
-                        bw.Write(new byte[4]);
-                    }
-                    else
-                    {
-                        bw.WriteNullTerminatedString(SkyboxName);
-                    }
+                    bw.Write(new byte[4]);
                 }
-
-                return ms.ToArray();
+                else
+                {
+                    bw.WriteNullTerminatedString(SkyboxName!);
+                }
             }
+
+            return ms.ToArray();
         }
     }
 }

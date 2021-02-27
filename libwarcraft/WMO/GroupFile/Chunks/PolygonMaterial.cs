@@ -1,7 +1,10 @@
 //
 //  PolygonMaterial.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -43,14 +46,10 @@ namespace Warcraft.WMO.GroupFile.Chunks
         /// <param name="inData">The binary data.</param>
         public PolygonMaterial(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    Flags = (PolygonMaterialFlags)br.ReadByte();
-                    MaterialIndex = br.ReadByte();
-                }
-            }
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            Flags = (PolygonMaterialFlags)br.ReadByte();
+            MaterialIndex = br.ReadByte();
         }
 
         /// <summary>
@@ -65,16 +64,14 @@ namespace Warcraft.WMO.GroupFile.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
-                {
-                    bw.Write((byte)Flags);
-                    bw.Write(MaterialIndex);
-                }
-
-                return ms.ToArray();
+                bw.Write((byte)Flags);
+                bw.Write(MaterialIndex);
             }
+
+            return ms.ToArray();
         }
     }
 }

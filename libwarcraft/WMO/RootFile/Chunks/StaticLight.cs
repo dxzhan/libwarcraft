@@ -1,7 +1,10 @@
 //
 //  StaticLight.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -101,29 +104,25 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <param name="inData">The binary data.</param>
         public StaticLight(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    Type = (LightType)br.ReadByte();
-                    UseAttenuation = br.ReadBoolean();
-                    UseUnknown1 = br.ReadBoolean();
-                    UseUnknown2 = br.ReadBoolean();
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            Type = (LightType)br.ReadByte();
+            UseAttenuation = br.ReadBoolean();
+            UseUnknown1 = br.ReadBoolean();
+            UseUnknown2 = br.ReadBoolean();
 
-                    Colour = br.ReadBGRA();
-                    Position = br.ReadVector3();
-                    Intensity = br.ReadSingle();
+            Colour = br.ReadBGRA();
+            Position = br.ReadVector3();
+            Intensity = br.ReadSingle();
 
-                    AttenuationStartRadius = br.ReadSingle();
-                    AttenuationEndRadius = br.ReadSingle();
+            AttenuationStartRadius = br.ReadSingle();
+            AttenuationEndRadius = br.ReadSingle();
 
-                    Unknown1StartRadius = br.ReadSingle();
-                    Unknown1EndRadius = br.ReadSingle();
+            Unknown1StartRadius = br.ReadSingle();
+            Unknown1EndRadius = br.ReadSingle();
 
-                    Unknown2StartRadius = br.ReadSingle();
-                    Unknown2EndRadius = br.ReadSingle();
-                }
-            }
+            Unknown2StartRadius = br.ReadSingle();
+            Unknown2EndRadius = br.ReadSingle();
         }
 
         /// <summary>
@@ -138,32 +137,30 @@ namespace Warcraft.WMO.RootFile.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
-                {
-                    bw.Write((byte)Type);
+                bw.Write((byte)Type);
 
-                    bw.Write(UseAttenuation);
-                    bw.Write(UseUnknown1);
-                    bw.Write(UseUnknown2);
+                bw.Write(UseAttenuation);
+                bw.Write(UseUnknown1);
+                bw.Write(UseUnknown2);
 
-                    bw.WriteBGRA(Colour);
-                    bw.WriteVector3(Position);
-                    bw.Write(Intensity);
+                bw.WriteBGRA(Colour);
+                bw.WriteVector3(Position);
+                bw.Write(Intensity);
 
-                    bw.Write(AttenuationStartRadius);
-                    bw.Write(AttenuationEndRadius);
+                bw.Write(AttenuationStartRadius);
+                bw.Write(AttenuationEndRadius);
 
-                    bw.Write(Unknown1StartRadius);
-                    bw.Write(Unknown1EndRadius);
+                bw.Write(Unknown1StartRadius);
+                bw.Write(Unknown1EndRadius);
 
-                    bw.Write(Unknown2StartRadius);
-                    bw.Write(Unknown2EndRadius);
-                }
-
-                return ms.ToArray();
+                bw.Write(Unknown2StartRadius);
+                bw.Write(Unknown2EndRadius);
             }
+
+            return ms.ToArray();
         }
     }
 }

@@ -1,7 +1,10 @@
 ﻿//
 //  BaseSkinSectionIdentifier.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -18,6 +21,7 @@
 //
 
 using System;
+using JetBrains.Annotations;
 
 namespace Warcraft.MDX.Geometry.Skin
 {
@@ -29,6 +33,7 @@ namespace Warcraft.MDX.Geometry.Skin
     /// The class can be inherited from, and override the meanings of the numeric values to ease human understanding of
     /// nongeneric section identifiers.
     /// </summary>
+    [PublicAPI]
     public class BaseSkinSectionIdentifier
     {
         private readonly ushort _internalValue;

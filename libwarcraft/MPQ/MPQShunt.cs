@@ -1,7 +1,10 @@
 //
 //  MPQShunt.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -65,20 +68,16 @@ namespace Warcraft.MPQ
                 throw new InvalidDataException("The data cannot be null.");
             }
 
-            using (var ms = new MemoryStream(data))
+            using var ms = new MemoryStream(data);
+            using var br = new BinaryReader(ms);
+            var dataSignature = br.ReadChars(4).ToString();
+            if (dataSignature != Signature)
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    var dataSignature = br.ReadChars(4).ToString();
-                    if (dataSignature != Signature)
-                    {
-                        throw new InvalidDataException("The data did not contain a valid shunt signature.");
-                    }
-
-                    _shuntedArchiveAllocatedSize = br.ReadUInt32();
-                    _shuntedArchiveOffset = br.ReadUInt32();
-                }
+                throw new InvalidDataException("The data did not contain a valid shunt signature.");
             }
+
+            _shuntedArchiveAllocatedSize = br.ReadUInt32();
+            _shuntedArchiveOffset = br.ReadUInt32();
         }
 
         /// <summary>
@@ -87,17 +86,15 @@ namespace Warcraft.MPQ
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
-                {
-                    bw.WriteChunkSignature(Signature);
-                    bw.Write(_shuntedArchiveAllocatedSize);
-                    bw.Write(_shuntedArchiveOffset);
-                }
-
-                return ms.ToArray();
+                bw.WriteChunkSignature(Signature);
+                bw.Write(_shuntedArchiveAllocatedSize);
+                bw.Write(_shuntedArchiveOffset);
             }
+
+            return ms.ToArray();
         }
     }
 }

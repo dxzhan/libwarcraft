@@ -1,7 +1,10 @@
 //
 //  HashTable.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -18,6 +21,7 @@
 //
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using JetBrains.Annotations;
 using Warcraft.Core.Interfaces;
@@ -49,19 +53,15 @@ namespace Warcraft.MPQ.Tables.Hash
         /// </summary>
         /// <param name="data">ExtendedData.</param>
         [PublicAPI]
-        public HashTable([NotNull] byte[] data)
+        public HashTable([JetBrains.Annotations.NotNull] byte[] data)
         {
-            using (var ms = new MemoryStream(data))
+            using var ms = new MemoryStream(data);
+            using var br = new BinaryReader(ms);
+            for (long i = 0; i < data.Length; i += HashTableEntry.GetSize())
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    for (long i = 0; i < data.Length; i += HashTableEntry.GetSize())
-                    {
-                        var entryBytes = br.ReadBytes((int)HashTableEntry.GetSize());
-                        var newEntry = new HashTableEntry(entryBytes);
-                        _entries.Add(newEntry);
-                    }
-                }
+                var entryBytes = br.ReadBytes((int)HashTableEntry.GetSize());
+                var newEntry = new HashTableEntry(entryBytes);
+                _entries.Add(newEntry);
             }
         }
 
@@ -73,8 +73,8 @@ namespace Warcraft.MPQ.Tables.Hash
         /// <exception cref="FileNotFoundException">
         /// Thrown if the given file path has no entry in the table.
         /// </exception>
-        [PublicAPI, NotNull]
-        public HashTableEntry FindEntry([NotNull] string fileName)
+        [PublicAPI, JetBrains.Annotations.NotNull]
+        public HashTableEntry FindEntry([JetBrains.Annotations.NotNull] string fileName)
         {
             if (!TryFindEntry(fileName, out var entry))
             {
@@ -94,7 +94,7 @@ namespace Warcraft.MPQ.Tables.Hash
         /// <exception cref="FileNotFoundException">
         /// Thrown if the given hash combination has no entry in the table.
         /// </exception>
-        [PublicAPI, NotNull]
+        [PublicAPI, JetBrains.Annotations.NotNull]
         public HashTableEntry FindEntry(uint hashA, uint hashB, uint entryHomeIndex)
         {
             if (!TryFindEntry(hashA, hashB, entryHomeIndex, out var entry))
@@ -113,7 +113,11 @@ namespace Warcraft.MPQ.Tables.Hash
         /// <returns>The entry.</returns>
         [PublicAPI]
         [ContractAnnotation("=> false, tableEntry : null; => true, tableEntry : notnull")]
-        public bool TryFindEntry([NotNull] string fileName, out HashTableEntry tableEntry)
+        public bool TryFindEntry
+        (
+            string fileName,
+            [NotNullWhen(true)] out HashTableEntry? tableEntry
+        )
         {
             var entryHomeIndex = MPQCrypt.Hash(fileName, HashType.FileHashTableOffset) & (uint)_entries.Count - 1;
             var hashA = MPQCrypt.Hash(fileName, HashType.FilePathA);
@@ -142,7 +146,7 @@ namespace Warcraft.MPQ.Tables.Hash
             uint hashA,
             uint hashB,
             uint entryHomeIndex,
-            out HashTableEntry tableEntry
+            [NotNullWhen(true)] out HashTableEntry? tableEntry
         )
         {
             tableEntry = null;
@@ -163,7 +167,7 @@ namespace Warcraft.MPQ.Tables.Hash
 
             // If that file doesn't match (but has existed, or is occupied, let's keep looking down the table.
             HashTableEntry currentEntry;
-            HashTableEntry deletionEntry = null;
+            HashTableEntry? deletionEntry = null;
             for (var i = (int)entryHomeIndex + 1; i < _entries.Count - 1; ++i)
             {
                 currentEntry = _entries[i];
@@ -229,19 +233,17 @@ namespace Warcraft.MPQ.Tables.Hash
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
+                foreach (var entry in _entries)
                 {
-                    foreach (var entry in _entries)
-                    {
-                        bw.Write(entry.Serialize());
-                    }
+                    bw.Write(entry.Serialize());
                 }
-
-                var encryptedTable = MPQCrypt.EncryptData(ms.ToArray(), TableKey);
-                return encryptedTable;
             }
+
+            var encryptedTable = MPQCrypt.EncryptData(ms.ToArray(), TableKey);
+            return encryptedTable;
         }
 
         /// <summary>

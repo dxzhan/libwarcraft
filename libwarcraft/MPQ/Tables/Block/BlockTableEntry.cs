@@ -1,7 +1,10 @@
 //
 //  BlockTableEntry.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -58,16 +61,12 @@ namespace Warcraft.MPQ.Tables.Block
         [PublicAPI]
         public BlockTableEntry([NotNull] byte[] data)
         {
-            using (var ms = new MemoryStream(data))
-            {
-                using (var br = new BinaryReader(ms))
-                {
-                    _blockOffset = br.ReadUInt32();
-                    _blockSize = br.ReadUInt32();
-                    _fileSize = br.ReadUInt32();
-                    Flags = (BlockFlags)br.ReadUInt32();
-                }
-            }
+            using var ms = new MemoryStream(data);
+            using var br = new BinaryReader(ms);
+            _blockOffset = br.ReadUInt32();
+            _blockSize = br.ReadUInt32();
+            _fileSize = br.ReadUInt32();
+            Flags = (BlockFlags)br.ReadUInt32();
         }
 
         /// <summary>
@@ -227,18 +226,16 @@ namespace Warcraft.MPQ.Tables.Block
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
-                {
-                    bw.Write(_blockOffset);
-                    bw.Write(_blockSize);
-                    bw.Write(_fileSize);
-                    bw.Write((uint)Flags);
-                }
-
-                return ms.ToArray();
+                bw.Write(_blockOffset);
+                bw.Write(_blockSize);
+                bw.Write(_fileSize);
+                bw.Write((uint)Flags);
             }
+
+            return ms.ToArray();
         }
 
         /// <summary>

@@ -1,7 +1,10 @@
 //
 //  ModelLiquids.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -95,31 +98,27 @@ namespace Warcraft.WMO.GroupFile.Chunks
         /// <inheritdoc/>
         public void LoadBinaryData(byte[] inData)
         {
-            using (var ms = new MemoryStream(inData))
+            using var ms = new MemoryStream(inData);
+            using var br = new BinaryReader(ms);
+            XVertexCount = br.ReadUInt32();
+            YVertexCount = br.ReadUInt32();
+
+            WidthTileFlags = br.ReadUInt32();
+            HeightTileFlags = br.ReadUInt32();
+
+            Location = br.ReadVector3();
+            MaterialIndex = br.ReadUInt16();
+
+            var vertexCount = XVertexCount * YVertexCount;
+            for (var i = 0; i < vertexCount; ++i)
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    XVertexCount = br.ReadUInt32();
-                    YVertexCount = br.ReadUInt32();
+                LiquidVertices.Add(new LiquidVertex(br.ReadBytes(LiquidVertex.GetSize())));
+            }
 
-                    WidthTileFlags = br.ReadUInt32();
-                    HeightTileFlags = br.ReadUInt32();
-
-                    Location = br.ReadVector3();
-                    MaterialIndex = br.ReadUInt16();
-
-                    var vertexCount = XVertexCount * YVertexCount;
-                    for (var i = 0; i < vertexCount; ++i)
-                    {
-                        LiquidVertices.Add(new LiquidVertex(br.ReadBytes(LiquidVertex.GetSize())));
-                    }
-
-                    var tileFlagCount = WidthTileFlags * HeightTileFlags;
-                    for (var i = 0; i < tileFlagCount; ++i)
-                    {
-                        LiquidTileFlags.Add((LiquidFlags)br.ReadByte());
-                    }
-                }
+            var tileFlagCount = WidthTileFlags * HeightTileFlags;
+            for (var i = 0; i < tileFlagCount; ++i)
+            {
+                LiquidTileFlags.Add((LiquidFlags)br.ReadByte());
             }
         }
 
@@ -132,32 +131,30 @@ namespace Warcraft.WMO.GroupFile.Chunks
         /// <inheritdoc/>
         public byte[] Serialize()
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var bw = new BinaryWriter(ms))
             {
-                using (var bw = new BinaryWriter(ms))
+                bw.Write(XVertexCount);
+                bw.Write(YVertexCount);
+
+                bw.Write(WidthTileFlags);
+                bw.Write(HeightTileFlags);
+
+                bw.WriteVector3(Location);
+                bw.Write(MaterialIndex);
+
+                foreach (var liquidVertex in LiquidVertices)
                 {
-                    bw.Write(XVertexCount);
-                    bw.Write(YVertexCount);
-
-                    bw.Write(WidthTileFlags);
-                    bw.Write(HeightTileFlags);
-
-                    bw.WriteVector3(Location);
-                    bw.Write(MaterialIndex);
-
-                    foreach (var liquidVertex in LiquidVertices)
-                    {
-                        bw.Write(liquidVertex.Serialize());
-                    }
-
-                    foreach (var liquidFlag in LiquidTileFlags)
-                    {
-                        bw.Write((byte)liquidFlag);
-                    }
+                    bw.Write(liquidVertex.Serialize());
                 }
 
-                return ms.ToArray();
+                foreach (var liquidFlag in LiquidTileFlags)
+                {
+                    bw.Write((byte)liquidFlag);
+                }
             }
+
+            return ms.ToArray();
         }
     }
 }

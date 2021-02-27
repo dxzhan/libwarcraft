@@ -1,7 +1,10 @@
 //
 //  MDXSkin.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -18,6 +21,9 @@
 //
 
 using System.IO;
+using JetBrains.Annotations;
+using Warcraft.Core;
+using Warcraft.Core.Extensions;
 using Warcraft.Core.Interfaces;
 using Warcraft.MDX.Data;
 using Warcraft.MDX.Visual;
@@ -29,6 +35,7 @@ namespace Warcraft.MDX.Geometry.Skin
     /// model. Each skin acts as a LOD (level of detail) instance. Skins, due to the way MDX files are serialized,
     /// are read using an extension to the builtin <see cref="BinaryReader"/>.
     /// </summary>
+    [PublicAPI]
     public class MDXSkin : IVersionedClass
     {
         /// <summary>
@@ -63,5 +70,20 @@ namespace Warcraft.MDX.Geometry.Skin
         /// Gets or sets the maximum number of bones in each draw call.
         /// </summary>
         public uint BoneCountMax { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MDXSkin"/> class.
+        /// </summary>
+        /// <param name="br">A binary reader pointing at a valid starting point for the data.</param>
+        /// <param name="version">The version to deserialize.</param>
+        public MDXSkin(BinaryReader br, WarcraftVersion version)
+        {
+            VertexIndices = br.ReadMDXArray<ushort>();
+            Triangles = br.ReadMDXArray<ushort>();
+            VertexProperties = br.ReadMDXArray<MDXVertexProperty>();
+            Sections = br.ReadMDXArray<MDXSkinSection>(version);
+            RenderBatches = br.ReadMDXArray<MDXRenderBatch>();
+            BoneCountMax = br.ReadUInt32();
+        }
     }
 }

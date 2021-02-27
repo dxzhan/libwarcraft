@@ -1,7 +1,10 @@
 ﻿//
 //  MPQCrypt.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -145,19 +148,20 @@ namespace Warcraft.MPQ.Crypto
             }
 
             // If we did have some dangling bytes, copy them to a new array
-            if (danglingBytes > 0)
+            if (danglingBytes <= 0)
             {
-                var decryptedDataBlock = finalizedData.ToArray();
-                var finalDecryptedData = new byte[decryptedDataBlock.Length + danglingBytes];
-
-                Buffer.BlockCopy(decryptedDataBlock, 0, finalDecryptedData, 0, decryptedDataBlock.Length);
-                Buffer.BlockCopy(data, (int)(data.Length - danglingBytes), finalDecryptedData, decryptedDataBlock.Length, (int)danglingBytes);
-
-                return finalDecryptedData;
+                return finalizedData.ToArray();
             }
 
+            var decryptedDataBlock = finalizedData.ToArray();
+            var finalDecryptedData = new byte[decryptedDataBlock.Length + danglingBytes];
+
+            Buffer.BlockCopy(decryptedDataBlock, 0, finalDecryptedData, 0, decryptedDataBlock.Length);
+            Buffer.BlockCopy(data, (int)(data.Length - danglingBytes), finalDecryptedData, decryptedDataBlock.Length, (int)danglingBytes);
+
+            return finalDecryptedData;
+
             // Else we can just return the data as-is
-            return finalizedData.ToArray();
         }
 
         /// <summary>
@@ -280,23 +284,21 @@ namespace Warcraft.MPQ.Crypto
         /// <param name="checksum">Sector checksum.</param>
         public static bool VerifySectorChecksum([NotNull] byte[] sector, uint checksum)
         {
-            using (var ms = new MemoryStream(sector))
+            using var ms = new MemoryStream(sector);
+            if (checksum == 0)
             {
-                if (checksum == 0)
-                {
-                    return true;
-                }
-
-                var sectorChecksum = (uint)Adler32.ComputeChecksum(ms);
-
-                if (sectorChecksum == 0)
-                {
-                    // We can't handle a 0 checksum.
-                    sectorChecksum = uint.MaxValue;
-                }
-
-                return sectorChecksum == checksum;
+                return true;
             }
+
+            var sectorChecksum = (uint)Adler32.ComputeChecksum(ms);
+
+            if (sectorChecksum == 0)
+            {
+                // We can't handle a 0 checksum.
+                sectorChecksum = uint.MaxValue;
+            }
+
+            return sectorChecksum == checksum;
         }
 
         /// <summary>

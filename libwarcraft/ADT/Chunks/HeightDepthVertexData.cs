@@ -1,7 +1,10 @@
 ﻿//
 //  HeightDepthVertexData.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -45,21 +48,17 @@ namespace Warcraft.ADT.Chunks
         /// <param name="height">The height of the vertex block.</param>
         public HeightDepthVertexData(byte[] data, byte width, byte height)
         {
-            using (var ms = new MemoryStream(data))
+            using var ms = new MemoryStream(data);
+            using var br = new BinaryReader(ms);
+            var arrayEntryCount = (width + 1) * (height + 1);
+            for (var i = 0; i < arrayEntryCount; ++i)
             {
-                using (var br = new BinaryReader(ms))
-                {
-                    var arrayEntryCount = (width + 1) * (height + 1);
-                    for (var i = 0; i < arrayEntryCount; ++i)
-                    {
-                        Heightmap.Add(br.ReadSingle());
-                    }
+                Heightmap.Add(br.ReadSingle());
+            }
 
-                    for (var i = 0; i < arrayEntryCount; ++i)
-                    {
-                        Depthmap.Add(br.ReadByte());
-                    }
-                }
+            for (var i = 0; i < arrayEntryCount; ++i)
+            {
+                Depthmap.Add(br.ReadByte());
             }
         }
 

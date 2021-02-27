@@ -1,7 +1,10 @@
 ﻿//
 //  RGB.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -36,7 +39,7 @@ namespace Warcraft.Core.Structures
         /// </summary>
         public float R
         {
-            get => _values.X;
+            readonly get => _values.X;
             set => _values.X = value;
         }
 
@@ -45,7 +48,7 @@ namespace Warcraft.Core.Structures
         /// </summary>
         public float G
         {
-            get => _values.Y;
+            readonly get => _values.Y;
             set => _values.Y = value;
         }
 
@@ -54,7 +57,7 @@ namespace Warcraft.Core.Structures
         /// </summary>
         public float B
         {
-            get => _values.Z;
+            readonly get => _values.Z;
             set => _values.Z = value;
         }
 
@@ -83,7 +86,7 @@ namespace Warcraft.Core.Structures
         /// Creates a string representation of the current instance.
         /// </summary>
         /// <returns>A string representation of the current instance.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"rgb({R}, {G}, {B})";
         }

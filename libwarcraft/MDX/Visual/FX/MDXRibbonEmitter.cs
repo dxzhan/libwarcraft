@@ -1,7 +1,10 @@
 //
 //  MDXRibbonEmitter.cs
 //
-//  Copyright (c) 2018 Jarl Gullberg
+//  Author:
+//       Jarl Gullberg <jarl.gullberg@gmail.com>
+//
+//  Copyright (c) 2017 Jarl Gullberg
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -152,11 +155,13 @@ namespace Warcraft.MDX.Visual.FX
             TextureSlot = br.ReadMDXTrack<ushort>(version);
             Visibility = br.ReadMDXTrack<bool>(version);
 
-            if (version >= WarcraftVersion.Wrath)
+            if (version < WarcraftVersion.Wrath)
             {
-                PriorityPlane = br.ReadInt16();
-                Unknown = br.ReadInt16();
+                return;
             }
+
+            PriorityPlane = br.ReadInt16();
+            Unknown = br.ReadInt16();
         }
     }
 }
